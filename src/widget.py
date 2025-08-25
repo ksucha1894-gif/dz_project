@@ -14,3 +14,13 @@ def mask_account_card(card_tipe_number: str) -> str:
 
 card_tipe_number = "Visa Platinum 7000792289606361"
 print(mask_account_card(card_tipe_number))
+
+def get_date(date_tipe: str) -> str:
+    """
+       Функция, которая принимает строку с датой в формате "2024-03-11T02:26:18.67140
+       Функция, которая возвращает строку с датой в формате "ДД.ММ.ГГГГ"
+    """
+    return f'{date_tipe[8:10]}.{date_tipe[5:7]}.{date_tipe[:4]}'
+
+date_tipe: str = "2024-03-11T02:26:18.67140"
+print(get_date(date_tipe))
