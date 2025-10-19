@@ -20,7 +20,7 @@ def sort_by_date(
     """
     reverse_sort = True if key == "desc" else False
     return sorted(
-        data_banking_operations,
+        date_operations,
         key=lambda x: datetime.strptime(x['date'] if isinstance(x['date'], str)
                                         else x['date'].isoformat(), '%Y-%m-%d'),
         reverse=reverse_sort
