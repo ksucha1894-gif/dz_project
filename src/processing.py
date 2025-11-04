@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List, Dict, Union
 
 
 def filter_by_state(banking_operations: list[dict], state: str = 'EXECUTED') -> list[dict]:
@@ -12,16 +13,18 @@ def filter_by_state(banking_operations: list[dict], state: str = 'EXECUTED') -> 
 
 def sort_by_date(
     date_operations: list[dict[str, Union[str, datetime]]],
+    state: str = 'EXECUTED',
     key: str = "desc"
 ) -> list[dict[str, Union[str, datetime]]]:
     """
-    Сортирует список словарей по полю 'date'.
-    Возвращает новый список словарей, отсортированный по дате.
+    Фильтрует и сортирует список словарей по полю 'date'.
+    Возвращает новый список словарей, содержащий только те словари, у которых значение ключа 'state' соответствует
+    указанному, отсортированный по дате.
     """
+    filtered_operations = [op for op in date_operations if op['state'] == state]
     reverse_sort = True if key == "desc" else False
     return sorted(
-        date_operations,
-        key=lambda x: datetime.strptime(x['date'] if isinstance(x['date'], str)
-                                        else x['date'].isoformat(), '%Y-%m-%d'),
+        filtered_operations,
+        key=lambda x: datetime.strptime(str(x['date']), '%Y-%m-%dT%H:%M:%S.%f'),
         reverse=reverse_sort
     )
