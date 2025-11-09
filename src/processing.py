@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import List, Dict, Union
+from imports import Union, datetime
 
 
 def filter_by_state(banking_operations: list[dict], state: str = 'EXECUTED') -> list[dict]:
