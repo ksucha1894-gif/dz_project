@@ -2,7 +2,7 @@ from imports import Any, pytest
 
 
 @pytest.fixture
-def banking_operations() -> list[dict[str, Any]]:
+def banking_operations_fixture() -> list[dict[str, Any]]:
     return [
         {'id': 41428829, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'},
         {'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T02:08:58.425572'},
@@ -12,7 +12,7 @@ def banking_operations() -> list[dict[str, Any]]:
 
 
 @pytest.fixture
-def date_operations() -> list[dict[str, Any]]:
+def date_operations_fixture() -> list[dict[str, Any]]:
     return [
         {'id': 41428829, 'state': 'EXECUTED', 'date': '2019-07-03T18:35:29.512364'},
         {'id': 939719570, 'state': 'EXECUTED', 'date': '2018-06-30T02:08:58.425572'},

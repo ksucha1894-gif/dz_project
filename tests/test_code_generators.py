@@ -1,7 +1,7 @@
 from imports import Any, card_number_generator, filter_by_currency, pytest, transaction_descriptions
 
 
-@pytest.mark.parametrize("transactions, currency, expected", [
+@pytest.mark.parametrize("filter_by_currency_fixture, currency, expected", [
     ([{"id": 939719570, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572",
        "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}},
        "description": "Перевод организации", "from": "Счет 75106830613657916952",
@@ -36,11 +36,11 @@ from imports import Any, card_number_generator, filter_by_currency, pytest, tran
        "to": "Счет 14211924144426031657"}], "USD", []),
     ([], "NON_EXISTENT", [])
 ])
-def test_filter_by_currency(transactions: list[dict[str, Any]], currency: str, expected: list[dict[str, Any]]) -> None:
-    assert list(filter_by_currency(transactions, currency)) == expected
+def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected: list[dict[str, Any]]) -> None:
+    assert list(filter_by_currency(filter_by_currency_fixture, currency)) == expected
 
 
-@pytest.mark.parametrize("transactions, expected", [
+@pytest.mark.parametrize("transactions_fixture, expected", [
     ([{"description": "Перевод организации", "from": "Счет 75106830613657916952",
        "to": "Счет 11776614605963066702"},
       {"description": "Перевод со счета на счет", "from": "Счет 19708645243227258542",
@@ -56,8 +56,8 @@ def test_filter_by_currency(transactions: list[dict[str, Any]], currency: str, e
       "Перевод организации"]),
     ([], [])
 ])
-def test_transaction_descriptions(transactions: list[dict], expected: list[str]) -> None:
-    assert list(transaction_descriptions(transactions)) == expected
+def test_transaction_descriptions(transactions_fixture, expected: list[str]) -> None:
+    assert list(transaction_descriptions(transactions_fixture)) == expected
 
 
 @pytest.mark.parametrize("start, stop, expected", [

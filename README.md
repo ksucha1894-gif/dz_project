@@ -126,8 +126,8 @@ def test_filter_by_state(banking_operations: list[dict[str, Any]], state: str, e
     ]),
     ('NON_EXISTENT', [])
 ])
-def test_sort_by_date(date_operations: list[dict[str, Any]], state: str, expected: list[dict[str, Any]]) -> None:
-    assert sort_by_date(date_operations, state, key='desc') == expected
+def test_sort_by_date(date_operations_fixture, state: str, expected: list[dict[str, Any]]) -> None:
+    assert sort_by_date(date_operations_fixture, state, key='desc') == expected
 
 4. Добавлены файлы с фикстурами conftest.py и импортом необходимых словарей и функций imports.py
 5. Введите данные своих транзакций для корректного отражения и анализа валюты, описания транзакции и банковской карты. Воспользуйтесь функциями filter_by_currency, transaction_descriptions, card_number_generator.
@@ -210,7 +210,7 @@ for card_number in card_number_generator(1, 5):
 
 6. Проведены тесты на транзакции:
 
-@pytest.mark.parametrize("transactions, currency, expected", [
+@pytest.mark.parametrize("filter_by_currency_fixture, currency, expected", [
     ([{"id": 939719570, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572",
        "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}},
        "description": "Перевод организации", "from": "Счет 75106830613657916952",
@@ -245,11 +245,11 @@ for card_number in card_number_generator(1, 5):
        "to": "Счет 14211924144426031657"}], "USD", []),
     ([], "NON_EXISTENT", [])
 ])
-def test_filter_by_currency(transactions: list[dict[str, Any]], currency: str, expected: list[dict[str, Any]]) -> None:
-    assert list(filter_by_currency(transactions, currency)) == expected
+def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected: list[dict[str, Any]]) -> None:
+    assert list(filter_by_currency(filter_by_currency_fixture, currency)) == expected
 
 
-@pytest.mark.parametrize("transactions, expected", [
+@pytest.mark.parametrize("transactions_fixture, expected", [
     ([{"description": "Перевод организации", "from": "Счет 75106830613657916952",
        "to": "Счет 11776614605963066702"},
       {"description": "Перевод со счета на счет", "from": "Счет 19708645243227258542",
@@ -260,12 +260,13 @@ def test_filter_by_currency(transactions: list[dict[str, Any]], currency: str, e
        "to": "Visa Platinum 8990922113665229"},
       {"description": "Перевод организации", "from": "Visa Platinum 1246377376343588",
        "to": "Счет 14211924144426031657"}
-     ],
-     ["Перевод организации", "Перевод со счета на счет", "Перевод со счета на счет", "Перевод с карты на карту", "Перевод организации"]),
+      ],
+     ["Перевод организации", "Перевод со счета на счет", "Перевод со счета на счет", "Перевод с карты на карту",
+      "Перевод организации"]),
     ([], [])
 ])
-def test_transaction_descriptions(transactions: list[dict], expected: list[str]) -> None:
-    assert list(transaction_descriptions(transactions)) == expected
+def test_transaction_descriptions(transactions_fixture, expected: list[str]) -> None:
+    assert list(transaction_descriptions(transactions_fixture)) == expected
 
 
 @pytest.mark.parametrize("start, stop, expected", [
