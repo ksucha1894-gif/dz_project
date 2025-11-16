@@ -1,5 +1,5 @@
-from imports import (Any, filter_by_state, get_date, get_mask_account, get_mask_card_number, mask_account_card, pytest,
-                     sort_by_date)
+from imports import (Any, get_date, get_mask_account, get_mask_card_number, mask_account_card, pytest,
+                     sort_by_date, filter_by_currency)
 
 
 @pytest.mark.parametrize("number, masked_number", [
