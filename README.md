@@ -276,3 +276,79 @@ def test_transaction_descriptions(transactions_fixture, expected: list[str]) -> 
 ])
 def test_card_number_generator(start: int, stop: int, expected: list[str]) -> None:
     assert list(card_number_generator(start, stop)) == expected
+
+7. Добавлен декоратор и проведена проверка его работы тестами
+
+def log(filename: Optional[str] = None) -> Callable:
+    """
+    Декоратор для логирования выполнения функции.
+    Если задан `filename`, лог записывается в файл, иначе выводится в консоль.
+    """
+    def wrapper(func: Callable) -> Callable:
+        @wraps(func)
+        def inner(*args: Any, **kwargs: Any) -> Any:
+            """Логирование начала и конца выполнения функции, а также ее результаты или возникшие ошибки"""
+            try:
+                start_time = time()
+                result = func(*args, **kwargs)
+                end_time = time()
+                log_message = (f"Функция: {func.__name__}\n Время начала выполнения функции: {start_time}\n "
+                               f"Время окончания выполнения функции: {end_time}\n Результат: {result}\n")
+                if filename:
+                    with open(filename, "a") as log_file:
+                        log_file.write(log_message)
+                else:
+                    print(log_message)
+                return result
+
+            except Exception as e:
+                error_message = f'{func.__name__} error: {str(e)}. Inputs: {args}, {kwargs}'
+                if filename:
+                    with open(filename, "a") as log_file:
+                        log_file.write(error_message)
+                else:
+                    print(error_message)
+                raise
+
+        return inner
+
+    return wrapper
+
+@log(None)
+def add(x: int, y: int) -> int:
+    return x + y
+
+
+def test_add_log_output(capsys: pytest.CaptureFixture[str]) -> None:
+    add(1, 2)
+    captured = capsys.readouterr()
+    assert "Функция: add" in captured.out
+    assert "Результат: 3" in captured.out
+
+
+def test_add_log_to_file(tmp_path: Any) -> None:
+    log_file = tmp_path / "mylog.txt"
+
+    @log(log_file)
+    def add_func(x: int, y: int) -> int:
+        return x + y
+
+    add_func(1, 2)
+
+    with open(log_file, "r") as f:
+        content = f.read()
+        assert "Функция: add_func" in content
+        assert "Результат: 3" in content
+
+
+@log(None)
+def error_func(x: int, y: int) -> float:
+    return x / y
+
+
+def test_error_logging(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(ZeroDivisionError):
+        error_func(1, 0)
+    captured = capsys.readouterr()
+    assert "error_func" in captured.out
+    assert "division by zero" in captured.out
