@@ -1,4 +1,6 @@
-from imports import Any, pytest
+from typing import Any
+
+import pytest
 
 
 @pytest.fixture

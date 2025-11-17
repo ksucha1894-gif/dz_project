@@ -1,5 +1,11 @@
-from imports import (Any, get_date, get_mask_account, get_mask_card_number, mask_account_card, pytest,
-                     sort_by_date, filter_by_currency)
+from typing import Any
+
+import pytest
+
+from src.masks import get_mask_account, get_mask_card_number
+from src.processing import sort_by_date
+from src.widget import get_date, mask_account_card
+from src.generators import filter_by_currency
 
 
 @pytest.mark.parametrize("number, masked_number", [
@@ -83,7 +89,8 @@ def test_get_date(date: str, date_tipe: str) -> None:
        "to": "Счет 14211924144426031657"}], "USD", []),
     ([], "NON_EXISTENT", [])
 ])
-def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected: list[dict[str, Any]]) -> None:
+def test_filter_by_currency(filter_by_currency_fixture: list[dict[str, Any]], currency: str,
+                            expected: list[dict[str, Any]]) -> None:
     assert list(filter_by_currency(filter_by_currency_fixture, currency)) == expected
 
 
@@ -98,5 +105,6 @@ def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected:
     ]),
     ('NON_EXISTENT', [])
 ])
-def test_sort_by_date(date_operations_fixture, state: str, expected: list[dict[str, Any]]) -> None:
+def test_sort_by_date(date_operations_fixture: list[dict[str, Any]], state: str,
+                      expected: list[dict[str, Any]]) -> None:
     assert sort_by_date(date_operations_fixture, state, key='desc') == expected

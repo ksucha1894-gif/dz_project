@@ -1,4 +1,8 @@
-from imports import Any, card_number_generator, filter_by_currency, pytest, transaction_descriptions
+from typing import Any
+
+import pytest
+
+from src.generators import card_number_generator, filter_by_currency, transaction_descriptions
 
 
 @pytest.mark.parametrize("filter_by_currency_fixture, currency, expected", [
@@ -36,7 +40,8 @@ from imports import Any, card_number_generator, filter_by_currency, pytest, tran
        "to": "Счет 14211924144426031657"}], "USD", []),
     ([], "NON_EXISTENT", [])
 ])
-def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected: list[dict[str, Any]]) -> None:
+def test_filter_by_currency(filter_by_currency_fixture: list[dict[str, Any]], currency: str,
+                            expected: list[dict[str, Any]]) -> None:
     assert list(filter_by_currency(filter_by_currency_fixture, currency)) == expected
 
 
@@ -56,7 +61,7 @@ def test_filter_by_currency(filter_by_currency_fixture, currency: str, expected:
       "Перевод организации"]),
     ([], [])
 ])
-def test_transaction_descriptions(transactions_fixture, expected: list[str]) -> None:
+def test_transaction_descriptions(transactions_fixture: list[dict[Any, Any]], expected: list[str]) -> None:
     assert list(transaction_descriptions(transactions_fixture)) == expected
 
 
