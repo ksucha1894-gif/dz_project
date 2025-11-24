@@ -352,3 +352,196 @@ def test_error_logging(capsys: pytest.CaptureFixture[str]) -> None:
     captured = capsys.readouterr()
     assert "error_func" in captured.out
     assert "division by zero" in captured.out
+
+8. Добавлена функция, которая загружает данные о финансовых транзакциях из JSON-файла, и проведены тесты:
+def load_transactions(filepath: str) -> List[Dict]:
+    """Загружает данные о финансовых транзакциях из JSON-файла."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        print(f"Ошибка: Файл по пути '{filepath}' не найден.")
+        return []
+    except json.JSONDecodeError:
+        print(f"Ошибка: Файл '{filepath}' содержит некорректный JSON.")
+        return []
+    except Exception as e:
+        print(f"Произошла непредвиденная ошибка: {e}")
+        return []
+
+    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+        return data
+    else:
+        print(f"Ошибка: Данные в файле '{filepath}' не являются списком словарей.")
+        return []
+
+Тесты:
+class TestLoadTransactions(unittest.TestCase):
+
+    @patch('builtins.open', new_callable=mock_open)
+    def test_load_correct_data(self, mock_file):
+        # Мокаем корректные данные (список словарей)
+        mock_data = [
+            {"date": "2023-10-01", "amount": 100, "description": "Test"}
+        ]
+        mock_file.return_value.read.return_value = json.dumps(mock_data)
+
+        result = load_transactions('data/operations.json')
+        self.assertEqual(result, mock_data)
+        mock_file.assert_called_with('data/operations.json', 'r', encoding='utf-8')
+
+    @patch('builtins.open', new_callable=mock_open)
+    def test_file_not_found(self, mock_file):
+        # Вызовем исключение, чтобы эмулировать отсутствие файла
+        mock_file.side_effect = FileNotFoundError
+        result = load_transactions('data/operations.json')
+        self.assertEqual(result, [])
+
+    @patch('builtins.open', new_callable=mock_open)
+    def test_invalid_json(self, mock_file):
+        # Устанавливаем некорректный JSON
+        mock_file.return_value.read.return_value = "{invalid_json:}"
+
+        result = load_transactions('data/operations.json')
+        self.assertEqual(result, [])
+
+    @patch('builtins.open', new_callable=mock_open)
+    def test_data_is_not_list(self, mock_file):
+        # JSON-данные — не список
+        mock_file.return_value.read.return_value = json.dumps({"key": "value"})
+        result = load_transactions('data/operations.json')
+        self.assertEqual(result, [])
+
+    @patch('builtins.open', new_callable=mock_open)
+    def test_list_contains_non_dicts(self, mock_file):
+        # список, содержащий не словари
+        mock_file.return_value.read.return_value = json.dumps([1, 2, 3])
+        result = load_transactions('data/operations.json')
+        self.assertEqual(result, [])
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+9. Добавлена функция, которая конвертирует сумму транзакции в рубли, используя курсы валют из внешнего API, и проведено ее тестирование:
+load_dotenv()
+API_KEY = os.getenv('API_KEY')
+
+
+def convert_to_rubles(transaction: Dict[str, str], api_url: str) -> float:
+    """Конвертирует сумму транзакции в рубли, используя курсы валют из внешнего API."""
+    amount = float(transaction['amount'])
+    currency = transaction['currency'].upper()
+
+    if currency == 'RUB':
+        return amount
+    elif currency in ('USD', 'EUR'):
+        try:
+            response = requests.get(api_url, headers={'apikey': API_KEY})
+            response.raise_for_status()
+            rates = response.json()
+
+            # Проверяем наличие ключа перед использованием
+            if currency in rates:
+                rate = rates[currency]
+                if rate is not None:
+                    return float(amount * rate)
+                else:
+                    # Если ключ есть, но значение None — возвращаем исходную сумму
+                    print(f"Ключ {currency} есть, но значение равно None.")
+                    return amount
+            else:
+                # Ключа нет в ответе
+                print(f"Ключ {currency} отсутствует в ответе API.")
+                return amount
+
+        except requests.exceptions.RequestException as e:
+            print(f"Ошибка при получении курса валют: {e}")
+            return amount
+        except ValueError as e:
+            print(f"Некорректное значение курса: {e}")
+            return amount
+    else:
+        print(f"Неизвестная валюта: {currency}")
+        return amount
+
+Тесты:
+class TestConvertToRubles(unittest.TestCase):
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_convert_rub(self, mock_getenv, mock_requests_get):
+        # Валюта RUB, деньги остаются теми же
+        transaction = {'amount': '100', 'currency': 'RUB'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        self.assertEqual(result, 100)
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_convert_usd_success(self, mock_getenv, mock_requests_get):
+        # Замокаем переменную окружения API_KEY
+        mock_getenv.return_value = 'fake_api_key'
+        # Мокаем успешный ответ API с курсом USD
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {'USD': 75.0}
+        mock_requests_get.return_value = mock_response
+
+        transaction = {'amount': '2', 'currency': 'USD'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        self.assertAlmostEqual(result, 2 * 75.0)
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_convert_eur_success(self, mock_getenv, mock_requests_get):
+        # Замокаем переменную окружения API_KEY
+        mock_getenv.return_value = 'fake_api_key'
+        # Мокаем успешный ответ API с курсом EUR
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        mock_response.json.return_value = {'EUR': 90.0}
+        mock_requests_get.return_value = mock_response
+
+        transaction = {'amount': '3', 'currency': 'EUR'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        self.assertAlmostEqual(result, 3 * 90.0)
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_api_request_exception(self, mock_getenv, mock_requests_get):
+        mock_getenv.return_value = 'fake_api_key'
+        # Имитируем RequestException
+        mock_requests_get.side_effect = requests.exceptions.RequestException("API error")
+
+        transaction = {'amount': '10', 'currency': 'USD'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        # В случае ошибки возвращается исходная сумма
+        self.assertEqual(result, 10)
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_missing_currency_key(self, mock_getenv, mock_requests_get):
+        mock_getenv.return_value = 'fake_api_key'
+        mock_response = Mock()
+        mock_response.raise_for_status = Mock()
+        # Отсутствует ключ 'EUR' в ответе
+        mock_response.json.return_value = {}
+        mock_requests_get.return_value = mock_response
+
+        transaction = {'amount': '5', 'currency': 'EUR'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        # При KeyError возвращается исходная сумма
+        self.assertEqual(result, 5)
+
+    @patch('requests.get')
+    @patch('os.getenv')
+    def test_unknown_currency(self, mock_getenv, mock_requests_get):
+        # Валюта не из списка
+        transaction = {'amount': '7', 'currency': 'GBP'}
+        result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
+        # В случае неизвестной валюты возвращается исходная сумма
+        self.assertEqual(result, 7)
+
+
+if __name__ == '__main__':
+    unittest.main()
