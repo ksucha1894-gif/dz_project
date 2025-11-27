@@ -1,24 +1,36 @@
 import json
+import logging
 from typing import Dict, List
+
+logger = logging.getLogger('utils')
+file_handler = logging.FileHandler('../logs/utils.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
 
 
 def load_transactions(filepath: str) -> List[Dict]:
     """Загружает данные о финансовых транзакциях из JSON-файла."""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
+            logger.info(f"Попытка открытия файла: '{filepath}'.")
             data = json.load(f)
+            logger.info(f"Успешно загружены данные из файла: '{filepath}'.")
     except FileNotFoundError:
-        print(f"Ошибка: Файл по пути '{filepath}' не найден.")
+        logger.error(f"Файл по пути '{filepath}' не найден.")
         return []
     except json.JSONDecodeError:
-        print(f"Ошибка: Файл '{filepath}' содержит некорректный JSON.")
+        logger.error(f"Файл '{filepath}' содержит некорректный JSON.")
         return []
     except Exception as e:
-        print(f"Произошла непредвиденная ошибка: {e}")
+        logger.error(f"Непредвиденная ошибка при загрузке файла '{filepath}': {e}")
         return []
 
+    # Проверка структуры данных
     if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+        logger.info(f"Данные в файле '{filepath}' успешно проверены и имеют правильную структуру.")
         return data
     else:
-        print(f"Ошибка: Данные в файле '{filepath}' не являются списком словарей.")
+        logger.error(f"Данные в файле '{filepath}' не являются списком словарей.")
         return []
