@@ -545,3 +545,83 @@ class TestConvertToRubles(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+10. Добавлены логеры в файлы masks и utils:
+logger = logging.getLogger('masks')
+file_handler = logging.FileHandler('../logs/masks.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
+
+
+def get_mask_card_number(number: str) -> str:
+    """
+    Функция принимает число - номер карты.
+    Маска преобразует число в формат XXXX XX** **** XXXX.
+    Если в номере есть недопустимые символы, логирует ошибку.
+    """
+    if re.fullmatch(r"\d+", number):  # Проверяем, что введены только цифры
+        masked_number = f"{number[:4]} {number[4:6]}** **** {number[-4:]}"
+        print("Логирование начинается")
+        logger.info('Маскировка номера банковской карты')
+        return masked_number
+    else:
+        logger.error('Введены недопустимые символы в номере карты')
+        return ""
+
+
+def get_mask_account(account_number: str) -> str:
+    """
+    Функция принимает номер счета.
+    Маска преобразует номер счета в формат **XXXX.
+    Если в номере есть нецифровые символы, логирует ошибку.
+    """
+    if not account_number.isdigit():
+        logger.error(f"В номере счета обнаружены недопустимые символы: '{account_number}'")
+        return "Ошибка: номер счета содержит недопустимые символы."
+
+    if len(account_number) < 4:
+        logger.info(f"Номер счета слишком короткий для маскировки: '{account_number}'. Возвращается маска.")
+        return "**" + account_number
+    else:
+        logger.info(f"Маскировка номера счета: последние 4 символа '{account_number[-4:]}'")
+        return f"**{account_number[-4:]}"
+
+
+if __name__ != "__main__":
+print(get_mask_card_number("1234567812345678"))
+print(get_mask_account("12345678"))
+
+logger = logging.getLogger('utils')
+file_handler = logging.FileHandler('../logs/utils.log')
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
+
+
+def load_transactions(filepath: str) -> List[Dict]:
+    """Загружает данные о финансовых транзакциях из JSON-файла."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            logger.info(f"Попытка открытия файла: '{filepath}'.")
+            data = json.load(f)
+            logger.info(f"Успешно загружены данные из файла: '{filepath}'.")
+    except FileNotFoundError:
+        logger.error(f"Файл по пути '{filepath}' не найден.")
+        return []
+    except json.JSONDecodeError:
+        logger.error(f"Файл '{filepath}' содержит некорректный JSON.")
+        return []
+    except Exception as e:
+        logger.error(f"Непредвиденная ошибка при загрузке файла '{filepath}': {e}")
+        return []
+
+    # Проверка структуры данных
+    if isinstance(data, list) and all(isinstance(item, dict) for item in data):
+        logger.info(f"Данные в файле '{filepath}' успешно проверены и имеют правильную структуру.")
+        return data
+    else:
+        logger.error(f"Данные в файле '{filepath}' не являются списком словарей.")
+        return []
