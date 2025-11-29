@@ -1,8 +1,14 @@
 import logging
 import re
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))  #Определяем путь в корневую папку проекта
+
+rel_file_path = os.path.join(current_dir, "../logs/masks.log") # Определяем относительный путь к файлу
+abs_file_path = os.path.abspath(rel_file_path)  # Определяем абсолютный путь в файлу
 
 logger = logging.getLogger('masks')
-file_handler = logging.FileHandler('../logs/masks.log')
+file_handler = logging.FileHandler(abs_file_path) #автоматически вставляем абсолютный путь к файлу для корректной работы
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -20,6 +26,8 @@ def get_mask_card_number(number: str) -> str:
         print("Логирование начинается")
         logger.info('Маскировка номера банковской карты')
         return masked_number
+    if not number:
+        return ' ** **** '
     else:
         logger.error('Введены недопустимые символы в номере карты')
         return ""
@@ -31,18 +39,18 @@ def get_mask_account(account_number: str) -> str:
     Маска преобразует номер счета в формат **XXXX.
     Если в номере есть нецифровые символы, логирует ошибку.
     """
-    if not account_number.isdigit():
+    if account_number == '':
+        return '**'
+    # Поиск последних четырех цифр
+    last_four_digits = re.search(r'(\d{0,4})$', account_number)
+    if last_four_digits and last_four_digits.group():
+        logger.info(f"Маскировка номера счета: последние 4 символа '{last_four_digits.group()}'")
+        return f"**{last_four_digits.group()}"
+    else:
         logger.error(f"В номере счета обнаружены недопустимые символы: '{account_number}'")
         return "Ошибка: номер счета содержит недопустимые символы."
 
-    if len(account_number) < 4:
-        logger.info(f"Номер счета слишком короткий для маскировки: '{account_number}'. Возвращается маска.")
-        return "**" + account_number
-    else:
-        logger.info(f"Маскировка номера счета: последние 4 символа '{account_number[-4:]}'")
-        return f"**{account_number[-4:]}"
-
 
 if __name__ != "__main__":
-print(get_mask_card_number("1234567812345678"))
-print(get_mask_account("12345678"))
+   print(get_mask_card_number("1234567812345678"))
+   print(get_mask_account("12345678"))

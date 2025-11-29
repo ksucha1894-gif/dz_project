@@ -1,9 +1,15 @@
 import json
 import logging
 from typing import Dict, List
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))  #Определяем путь в корневую папку проекта
+
+rel_file_path_1 = os.path.join(current_dir, "../logs/utils.log") # Определяем относительный путь к файлу
+abs_file_path_1 = os.path.abspath(rel_file_path_1)  # Определяем абсюлютныйпуть в файлу
 
 logger = logging.getLogger('utils')
-file_handler = logging.FileHandler('../logs/utils.log')
+file_handler = logging.FileHandler(abs_file_path_1)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
