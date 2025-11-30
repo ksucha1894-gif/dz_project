@@ -625,3 +625,96 @@ def load_transactions(filepath: str) -> List[Dict]:
     else:
         logger.error(f"Данные в файле '{filepath}' не являются списком словарей.")
         return []
+
+11. Созданы функции чтения о финансовых операций из CSV- и XLSX-файлов:
+
+def read_transaction_csv(file_path: str) -> List[Dict[str, str]]:
+    """Читает CSV-файл с транзакциями и возвращает список словарей."""
+    try:
+        with open(file_path) as file:
+            reader = csv.DictReader(file, delimiter=';')
+            return [row for row in reader]
+    except FileNotFoundError:
+        return []
+
+
+# Вызов функции с нужным путем к файлу
+transactions_list = read_transaction_csv('/Users/ksenia/Desktop/PYTHON/transactions.csv')
+print(transactions_list)
+
+
+def read_transaction_excel(excel_path: str) -> List[Dict]:
+    """Функция принимает путь к файлу формата excel и возвращает список словарей."""
+    try:
+        excel_data = pd.read_excel(excel_path)
+        return excel_data.to_dict(orient="records")
+    except FileNotFoundError:
+        print(f"Файл не найден: {excel_path}")
+        return []
+    except Exception as e:
+        print(f"Ошибка при чтении Excel файла: {e}")
+        return []
+
+
+# Вызов функции с нужным путем к файлу
+excel_path = '/Users/ksenia/Desktop/PYTHON/transactions_excel.xlsx'
+transactions_excel = read_transaction_excel(excel_path)
+print(transactions_excel)
+
+12. Созданы тесты для проверки функций чтения о финансовых операций из CSV- и XLSX-файлов:
+
+class TestReadTransactionCsv(unittest.TestCase):
+
+    @patch("builtins.open", new_callable=mock_open, read_data="date;amount\n2021-01-01;100\n2021-01-02;200")
+    @patch("csv.DictReader")
+    def test_read_csv_success(self, mock_csv_reader: unittest.mock.Mock, mock_open: unittest.mock.Mock) -> None:
+        # Настраиваем возврат словарей
+        mock_csv_instance = MagicMock()
+        mock_csv_instance.__iter__.return_value = iter([
+            {'date': '2021-01-01', 'amount': '100'},
+            {'date': '2021-01-02', 'amount': '200'}
+        ])
+        mock_csv_reader.return_value = mock_csv_instance
+
+        result = read_transaction_csv("dummy_path.csv")
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['date'], '2021-01-01')
+        self.assertEqual(result[1]['amount'], '200')
+
+        mock_open.assert_called_once_with("dummy_path.csv")
+        mock_csv_reader.assert_called_once()
+
+    @patch("builtins.open", side_effect=FileNotFoundError)
+    def test_read_csv_file_not_found(self, mock_open: unittest.mock.Mock) -> None:
+        result = read_transaction_csv("nonexistent.csv")
+        self.assertEqual(result, [])
+
+
+class TestReadTransactionExcel(unittest.TestCase):
+
+    @patch("pandas.read_excel")
+    def test_read_excel_success(self, mock_read_excel: unittest.mock.Mock) -> None:
+        # Создаём фейковый DataFrame и его возвращение
+        mock_df = MagicMock()
+        mock_df.to_dict.return_value = [
+            {'date': '2021-01-01', 'amount': 100},
+            {'date': '2021-01-02', 'amount': 200}
+        ]
+        mock_read_excel.return_value = mock_df
+
+        result = read_transaction_excel("dummy_excel.xlsx")
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0]['date'], '2021-01-01')
+
+        mock_read_excel.assert_called_once_with("dummy_excel.xlsx")
+        mock_df.to_dict.assert_called_once_with(orient="records")
+
+    @patch("pandas.read_excel", side_effect=FileNotFoundError)
+    def test_read_excel_file_not_found(self, mock_read_excel: unittest.mock.Mock) -> None:
+        result = read_transaction_excel("not_exist.xlsx")
+        self.assertEqual(result, [])
+
+    @patch("pandas.read_excel", side_effect=Exception("Other error"))
+    def test_read_excel_other_exception(self, mock_read_excel: unittest.mock.Mock) -> None:
+        result = read_transaction_excel("error.xlsx")
+        self.assertEqual(result, [])

@@ -1,14 +1,15 @@
 import logging
-import re
 import os
+import re
 
-current_dir = os.path.dirname(os.path.abspath(__file__))  #Определяем путь в корневую папку проекта
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Определяем путь в корневую папку проекта
 
-rel_file_path = os.path.join(current_dir, "../logs/masks.log") # Определяем относительный путь к файлу
+rel_file_path = os.path.join(current_dir, "../logs/masks.log")  # Определяем относительный путь к файлу
 abs_file_path = os.path.abspath(rel_file_path)  # Определяем абсолютный путь в файлу
 
 logger = logging.getLogger('masks')
-file_handler = logging.FileHandler(abs_file_path) #автоматически вставляем абсолютный путь к файлу для корректной работы
+# Автоматически вставляем абсолютный путь к файлу для корректной работы
+file_handler = logging.FileHandler(abs_file_path)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -52,5 +53,5 @@ def get_mask_account(account_number: str) -> str:
 
 
 if __name__ != "__main__":
-   print(get_mask_card_number("1234567812345678"))
-   print(get_mask_account("12345678"))
+    print(get_mask_card_number("1234567812345678"))
+    print(get_mask_account("12345678"))

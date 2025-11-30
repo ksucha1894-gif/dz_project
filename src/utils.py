@@ -1,12 +1,12 @@
 import json
 import logging
-from typing import Dict, List
 import os
+from typing import Dict, List
 
-current_dir = os.path.dirname(os.path.abspath(__file__))  #Определяем путь в корневую папку проекта
+current_dir = os.path.dirname(os.path.abspath(__file__))  # Определяем путь в корневую папку проекта
 
-rel_file_path_1 = os.path.join(current_dir, "../logs/utils.log") # Определяем относительный путь к файлу
-abs_file_path_1 = os.path.abspath(rel_file_path_1)  # Определяем абсюлютныйпуть в файлу
+rel_file_path_1 = os.path.join(current_dir, "../logs/utils.log")  # Определяем относительный путь к файлу
+abs_file_path_1 = os.path.abspath(rel_file_path_1)  # Определяем абсолютный путь в файлу
 
 logger = logging.getLogger('utils')
 file_handler = logging.FileHandler(abs_file_path_1)

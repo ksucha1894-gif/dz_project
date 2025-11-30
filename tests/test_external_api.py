@@ -10,7 +10,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_convert_rub(self, mock_getenv, mock_requests_get):
+    def test_convert_rub(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         # Валюта RUB, деньги остаются теми же
         transaction = {'amount': '100', 'currency': 'RUB'}
         result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
@@ -18,7 +18,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_convert_usd_success(self, mock_getenv, mock_requests_get):
+    def test_convert_usd_success(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         # Замокаем переменную окружения API_KEY
         mock_getenv.return_value = 'fake_api_key'
         # Мокаем успешный ответ API с курсом USD
@@ -33,7 +33,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_convert_eur_success(self, mock_getenv, mock_requests_get):
+    def test_convert_eur_success(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         # Замокаем переменную окружения API_KEY
         mock_getenv.return_value = 'fake_api_key'
         # Мокаем успешный ответ API с курсом EUR
@@ -48,7 +48,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_api_request_exception(self, mock_getenv, mock_requests_get):
+    def test_api_request_exception(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         mock_getenv.return_value = 'fake_api_key'
         # Имитируем RequestException
         mock_requests_get.side_effect = requests.exceptions.RequestException("API error")
@@ -60,7 +60,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_missing_currency_key(self, mock_getenv, mock_requests_get):
+    def test_missing_currency_key(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         mock_getenv.return_value = 'fake_api_key'
         mock_response = Mock()
         mock_response.raise_for_status = Mock()
@@ -75,7 +75,7 @@ class TestConvertToRubles(unittest.TestCase):
 
     @patch('requests.get')
     @patch('os.getenv')
-    def test_unknown_currency(self, mock_getenv, mock_requests_get):
+    def test_unknown_currency(self, mock_getenv: Mock, mock_requests_get: Mock) -> None:
         # Валюта не из списка
         transaction = {'amount': '7', 'currency': 'GBP'}
         result = convert_to_rubles(transaction, 'http://fakeapi.com/rates')
