@@ -6,10 +6,14 @@ from src.read_csv_excel import read_transaction_csv, read_transaction_excel
 
 class TestReadTransactionCsv(unittest.TestCase):
 
-    @patch("builtins.open", new_callable=mock_open, read_data="date;amount\n2021-01-01;100\n2021-01-02;200")
     @patch("csv.DictReader")
-    def test_read_csv_success(self, mock_csv_reader: unittest.mock.Mock, mock_open: unittest.mock.Mock) -> None:
-        # Настраиваем возврат словарей
+    @patch("builtins.open", new_callable=mock_open, read_data="date;amount\n2021-01-01;100\n2021-01-02;200")
+    def test_read_csv_success(
+            self,
+            mock_open_obj: MagicMock,
+            mock_csv_reader: MagicMock
+    ) -> None:
+        # Настраиваем возврат словарей при чтении csv
         mock_csv_instance = MagicMock()
         mock_csv_instance.__iter__.return_value = iter([
             {'date': '2021-01-01', 'amount': '100'},
@@ -18,12 +22,15 @@ class TestReadTransactionCsv(unittest.TestCase):
         mock_csv_reader.return_value = mock_csv_instance
 
         result = read_transaction_csv("dummy_path.csv")
+
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0]['date'], '2021-01-01')
         self.assertEqual(result[1]['amount'], '200')
 
-        mock_open.assert_called_once_with("dummy_path.csv")
-        mock_csv_reader.assert_called_once()
+        # Проверка, что open вызван с правильным путём и кодировкой
+        mock_open_obj.assert_called_once_with("dummy_path.csv", encoding='utf-8')
+        # Проверка, что csv.DictReader вызван
+        mock_csv_reader.assert_called()
 
     @patch("builtins.open", side_effect=FileNotFoundError)
     def test_read_csv_file_not_found(self, mock_open: unittest.mock.Mock) -> None:

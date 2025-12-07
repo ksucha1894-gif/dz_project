@@ -7,7 +7,7 @@ import pandas as pd
 def read_transaction_csv(file_path: str) -> List[Dict[str, str]]:
     """Читает CSV-файл с транзакциями и возвращает список словарей."""
     try:
-        with open(file_path) as file:
+        with open(file_path, encoding='utf-8') as file:
             reader = csv.DictReader(file, delimiter=';')
             return [row for row in reader]
     except FileNotFoundError:
