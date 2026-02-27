@@ -17,7 +17,9 @@ logger.setLevel(logging.DEBUG)
 
 
 def load_transactions(filepath: str) -> List[Dict]:
-    """Загружает данные о финансовых транзакциях из JSON-файла."""
+    """Загружает данные о финансовых транзакциях из JSON-файла.
+    :rtype: List[Dict]
+    """
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             logger.info(f"Попытка открытия файла: '{filepath}'.")
