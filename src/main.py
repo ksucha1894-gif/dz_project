@@ -1,3 +1,6 @@
+import os
+
+from typing import Dict, Any
 from src.utils import load_transactions
 from src.read_csv_excel import read_transaction_csv, read_transaction_excel
 from src.processing import filter_by_state, sort_by_date
@@ -14,16 +17,14 @@ def main() -> None:
     # Обработка выбора источника данных
     if choice == '1':
         print("Для обработки выбран JSON-файл.")
-        # Вызов функции загрузки из JSON
-        transactions = load_transactions()
+        transactions = load_transactions(os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions.json'))
     elif choice == '2':
         print("Для обработки выбран CSV-файл.")
-        # Вызов функции загрузки из CSV
-        transactions = read_transaction_csv()
+        transactions = read_transaction_csv(os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions.csv'))
     elif choice == '3':
         print("Для обработки выбран XLSX-файл.")
-        # Вызов функции загрузки из XLSX
-        transactions = read_transaction_excel()
+        transactions = read_transaction_excel(os.path.join(os.path.dirname(__file__), '..', 'data',
+                                                           'transactions_excel.xlsx'))
     else:
         print("Некорректный выбор. Завершение программы.")
         return
@@ -33,7 +34,6 @@ def main() -> None:
         print("Доступные для фильтрации статусы: EXECUTED, CANCELED, PENDING")
         status_input = input("Пользователь: ").strip()
 
-        # Нормализация статуса
         status_normalized = status_input.upper()
 
         if status_normalized in ['EXECUTED', 'CANCELED', 'PENDING']:
@@ -41,52 +41,56 @@ def main() -> None:
             break
         else:
             print(f"Статус операции \"{status_input}\" недоступен.")
-            # Повторный запрос статуса
+            # повторный запрос статуса
 
     # Предлагаем дополнительные фильтры
-    # Отсортировать по дате?
     print("Отсортировать операции по дате? Да/Нет")
     sort_date_choice = input("Пользователь: ").strip().lower()
     sort_date = sort_date_choice == 'да'
 
-    # По возрастанию или убыванию
     order = None
     if sort_date:
         print("Отсортировать по возрастанию или по убыванию?")
         order_input = input("Пользователь: ").strip().lower()
-        if order_input.lower() == 'по возрастанию':
+        if order_input == 'по возрастанию':
             order = 'asc'
-        elif order_input.lower() == 'по убыванию':
+        elif order_input == 'по убыванию':
             order = 'desc'
 
-    # Предварительно фильтруем по статусу, использую функцию filter_by_state
+    # Фильтруем по статусу
     transactions_filtered = filter_by_state(transactions, status_normalized)
 
-    # Далее сортируем по дате, если выбран сортировка
+    # Сортируем по дате, если выбрано
     if order:
         transactions_sorted = sort_by_date(transactions_filtered, key=order)
     else:
         transactions_sorted = transactions_filtered
 
-    # Предлагаем фильтрацию по валюте
+    # Фильтрация по валюте
     print("Выводить только рублёвые транзакции? Да/Нет")
     only_ruble_choice = input("Пользователь: ").strip().lower()
     only_ruble = only_ruble_choice == 'да'
 
-    # Фильтрация по валюте (только рубли)
     if only_ruble:
         transactions_final = [t for t in transactions_sorted if t.get('currency') == 'RUB']
     else:
         transactions_final = transactions_sorted
 
-    # Возвращаем итоговый список для отображения
-    filtered_transactions = transactions_final
+    # --- Добавляем фильтрацию по ключевому слову ---
+    print("Введите ключевое слово для фильтрации транзакций или оставьте пустым для пропуска:")
+    keyword = input("Пользователь: ").strip()
 
-    # Далее вывод:
-    if not filtered_transactions:
-        print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации")
+    if keyword:
+        def contains_keyword(transaction: Dict[str, Any]) -> bool:
+            return any(keyword.lower() in str(value).lower() for value in transaction.values())
+
+        transactions_final = [t for t in transactions_final if contains_keyword(t)]
+
+    # Итоговый список для отображения
+    if not transactions_final:
+        print("Не найдено ни одной транзакции, подходящей под ваши условия фильтрации.")
     else:
         print("\nРаспечатываю итоговый список транзакций...\n")
-        print(f"Всего банковских операций в выборке: {len(filtered_transactions)}")
-        for t in filtered_transactions:
+        print(f"Всего банковских операций в выборке: {len(transactions_final)}")
+        for t in transactions_final:
             print(t)

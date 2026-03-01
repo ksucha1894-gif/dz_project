@@ -1,7 +1,6 @@
 import csv
-
+import os
 from typing import Dict, List
-
 import pandas as pd
 
 
@@ -15,8 +14,9 @@ def read_transaction_csv(file_path: str) -> List[Dict[str, str]]:
         return []
 
 
-# Вызов функции с нужным путем к файлу
-transactions_list = read_transaction_csv('/Users/ksenia/Desktop/PYTHON/transactions.csv')
+# Определение пути к файлу относительно текущей директории
+csv_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions.csv')
+transactions_list = read_transaction_csv(csv_file_path)
 print(transactions_list)
 
 
@@ -33,7 +33,7 @@ def read_transaction_excel(excel_path: str) -> List[Dict]:
         return []
 
 
-# Вызов функции с нужным путем к файлу
-excel_path = '/Users/ksenia/Desktop/PYTHON/transactions_excel.xlsx'
-transactions_excel = read_transaction_excel(excel_path)
+# Определение пути к Excel-файлу относительно текущей директории
+excel_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions_excel.xlsx')
+transactions_excel = read_transaction_excel(excel_file_path)
 print(transactions_excel)

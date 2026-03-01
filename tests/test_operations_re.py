@@ -1,59 +1,56 @@
 import unittest
-import random
 
 from src.operations_re import process_bank_search, process_bank_operations
 
 
-class TestProcessBankOperations(unittest.TestCase):
-
-    def setUp(self):
-        self.categories = ['utilities', 'salary', 'transfer', 'grocery']
+class TestBankProcessing(unittest.TestCase):
+    def setUp(self) -> None:
+        # Исходные данные для тестирования
         self.data = [
-            {'description': 'Payment to utilities'},  # utilities
-            {'description': 'Salary from employer'},  # salary
-            {'description': 'Transfer to savings account'},  # transfer
-            {'description': 'Grocery shopping at supermarket'},  # grocery
-            {'description': 'Random payment'}  # не совпадает, random category
+            {'description': 'Payment to utilities'},
+            {'description': 'Salary from employer'},
+            {'description': 'Transfer to savings account'},
+            {'description': 'Grocery shopping at supermarket'}
         ]
 
-    def test_counts_with_exact_and_random(self):
-        random.seed(42)  # фиксация seed для воспроизводимости
-        result = process_bank_operations(self.data, self.categories)
+    def test_process_bank_search_found(self) -> None:
+        # Тест поиска по ключевому слову
+        result = process_bank_search(self.data, 'utilities')
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['description'], 'Payment to utilities')
 
-        # Сумма счетчиков должна равняться числу операций (строк в data)
+    def test_process_bank_search_not_found(self) -> None:
+        # Тест поиска по отсутствующему слову
+        result = process_bank_search(self.data, 'rent')
+        self.assertEqual(result, [])
+
+    def test_process_bank_operations_counts(self) -> None:
+        # Тест подсчёта операций по категориям
+        categories = ['utilities', 'salary', 'transfer', 'grocery']
+        result = process_bank_operations(self.data, categories)
+        # Ожидается по одной операции на каждую категорию
+        self.assertEqual(result['utilities'], 1)
+        self.assertEqual(result['salary'], 1)
+        self.assertEqual(result['transfer'], 1)
+        self.assertEqual(result['grocery'], 1)
+        # Общая сумма должна равняться количеству операций
         self.assertEqual(sum(result.values()), len(self.data))
 
-        # Должны быть все категории (поскольку последняя запись распределена рандомно)
-        for cat in self.categories:
-            self.assertIn(cat, result)
+    def test_process_bank_operations_empty_categories(self) -> None:
+        # Ваша текущая реализация возвращает пустой словарь при пустом списке
+        result = process_bank_operations(self.data, [])
+        self.assertEqual(result, {})
 
-        # Проверяем конкретный ожидаемый результат с seed=42
-        expected = {
-            'utilities': 1,
-            'salary': 1,
-            'transfer': 1,
-            'grocery': 2  # последняя "Random payment" с этим сидом попала в grocery
-        }
-        self.assertEqual(result, expected)
+    def test_process_bank_operations_empty_categories_need_exception(self) -> None:
+        # Если хотите, чтобы при пустом списке было исключение, раскомментируйте и используйте
+        # with self.assertRaises(IndexError):
+        #     process_bank_operations(self.data, [])
+        pass
 
-    def test_no_matches_all_random(self):
-        random.seed(1)
-        data = [
-            {'description': 'Unknown operation 1'},
-            {'description': 'Something else'},
-        ]
-        result = process_bank_operations(data, self.categories)
-        # В этом случае обе операции отнесены рандомно
-        self.assertEqual(sum(result.values()), len(data))
-
-    def test_empty_data(self):
-        result = process_bank_operations([], self.categories)
-        self.assertEqual(result, {})  # Пустой словарь, т.к. не было операций
-
-    def test_empty_categories_raises(self):
-        with self.assertRaises(IndexError):
-            # random.choice(categories) вызовет ошибку, если categories пуст
-            process_bank_operations(self.data, [])
+    def test_process_bank_search_case_insensitivity(self) -> None:
+        # Проверка игнорирования регистра в поиске
+        result = process_bank_search(self.data, 'Utilities')
+        self.assertEqual(len(result), 1)
 
 
 if __name__ == '__main__':

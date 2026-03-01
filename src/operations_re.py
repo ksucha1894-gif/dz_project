@@ -1,6 +1,6 @@
-import random
 import re
-from collections import defaultdict
+
+from collections import Counter
 from typing import Dict, List
 
 
@@ -22,11 +22,10 @@ def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
 def process_bank_operations(data: List[Dict], categories: List[str]) -> Dict[str, int]:
     """
     Подсчитывает количество операций по каждой категории на основе поля 'description'.
-    Использует регулярные выражения для поиска, а также random для случайных целей
-    (например, при отсутствии совпадений).
+    Использует Counter для подсчета.
     """
-    # Создаем словарь с дефолтным значением 0 для каждой категории
-    category_counts: Dict[str, int] = defaultdict(int)
+    # Создаем Counter для хранения количества операций по категориям
+    category_counts: Counter[str] = Counter()
 
     # Предварительно формируем регулярные выражения для каждой категории
     category_patterns = {
@@ -36,20 +35,12 @@ def process_bank_operations(data: List[Dict], categories: List[str]) -> Dict[str
 
     for record in data:
         description = record.get('description', '')
-        matched_category = None
 
         # Проверяем описание на совпадение с категориями
         for cat, pattern in category_patterns.items():
             if pattern.search(description):
                 category_counts[cat] += 1
-                matched_category = cat
                 break  # нашли категорию, идем к следующей операции
 
-        # Если ни одна категория не совпала, можно присвоить "прочие" или случайную категорию
-        if matched_category is None:
-            # Вариант с рандомным выбором категории
-            random_cat = random.choice(categories)
-            category_counts[random_cat] += 1
-
-    # Преобразуем defaultdict в обычный dict перед возвратом
+    # Возвращаем Counter как словарь
     return dict(category_counts)

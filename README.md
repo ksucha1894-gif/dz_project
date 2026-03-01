@@ -547,6 +547,7 @@ if __name__ == '__main__':
     unittest.main()
 
 10. Добавлены логеры в файлы masks и utils:
+
 logger = logging.getLogger('masks')
 file_handler = logging.FileHandler('../logs/masks.log')
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -628,6 +629,12 @@ def load_transactions(filepath: str) -> List[Dict]:
 
 11. Созданы функции чтения о финансовых операций из CSV- и XLSX-файлов:
 
+import csv
+import os
+from typing import Dict, List
+import pandas as pd
+
+
 def read_transaction_csv(file_path: str) -> List[Dict[str, str]]:
     """Читает CSV-файл с транзакциями и возвращает список словарей."""
     try:
@@ -637,9 +644,9 @@ def read_transaction_csv(file_path: str) -> List[Dict[str, str]]:
     except FileNotFoundError:
         return []
 
-
-# Вызов функции с нужным путем к файлу
-transactions_list = read_transaction_csv('/Users/ksenia/Desktop/PYTHON/transactions.csv')
+# Определение пути к файлу относительно текущей директории
+csv_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions.csv')
+transactions_list = read_transaction_csv(csv_file_path)
 print(transactions_list)
 
 
@@ -655,10 +662,9 @@ def read_transaction_excel(excel_path: str) -> List[Dict]:
         print(f"Ошибка при чтении Excel файла: {e}")
         return []
 
-
-# Вызов функции с нужным путем к файлу
-excel_path = '/Users/ksenia/Desktop/PYTHON/transactions_excel.xlsx'
-transactions_excel = read_transaction_excel(excel_path)
+# Определение пути к Excel-файлу относительно текущей директории
+excel_file_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'transactions_excel.xlsx')
+transactions_excel = read_transaction_excel(excel_file_path)
 print(transactions_excel)
 
 12. Созданы тесты для проверки функций чтения о финансовых операций из CSV- и XLSX-файлов:
@@ -722,6 +728,7 @@ class TestReadTransactionExcel(unittest.TestCase):
         self.assertEqual(result, [])
 
 13. Созданы функции поиска регулярных выражений и подсчета операций:
+
 def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
     """
     Ищет в списке словарей по ключу 'description' строки, содержащие search (регулярное выражение).
@@ -740,10 +747,10 @@ def process_bank_search(data: List[Dict], search: str) -> List[Dict]:
 def process_bank_operations(data: List[Dict], categories: List[str]) -> Dict[str, int]:
     """
     Подсчитывает количество операций по каждой категории на основе поля 'description'.
-    Использует регулярные выражения для поиска, а также random для случайных целей (например, при отсутствии совпадений).
+    Использует Counter для подсчета.
     """
-    # Создаем словарь с дефолтным значением 0 для каждой категории
-    category_counts = defaultdict(int)
+    # Создаем Counter для хранения количества операций по категориям
+    category_counts = Counter()
 
     # Предварительно формируем регулярные выражения для каждой категории
     category_patterns = {
@@ -762,14 +769,62 @@ def process_bank_operations(data: List[Dict], categories: List[str]) -> Dict[str
                 matched_category = cat
                 break  # нашли категорию, идем к следующей операции
 
-        # Если ни одна категория не совпала, можно присвоить "прочие" или случайную категорию
-        if matched_category is None:
-            # Вариант с рандомным выбором категории
-            random_cat = random.choice(categories)
-            category_counts[random_cat] += 1
-
-    # Преобразуем defaultdict в обычный dict перед возвратом
+    # Возвращаем Counter как обычный словарь
     return dict(category_counts)
+
+14. Проведены тесты функций поиска регулярных выражений и подсчета операций:
+
+class TestBankProcessing(unittest.TestCase):
+    def setUp(self):
+        # Исходные данные для тестирования
+        self.data = [
+            {'description': 'Payment to utilities'},
+            {'description': 'Salary from employer'},
+            {'description': 'Transfer to savings account'},
+            {'description': 'Grocery shopping at supermarket'}
+        ]
+
+    def test_process_bank_search_found(self):
+        # Тест поиска по ключевому слову
+        result = process_bank_search(self.data, 'utilities')
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]['description'], 'Payment to utilities')
+
+    def test_process_bank_search_not_found(self):
+        # Тест поиска по отсутствующему слову
+        result = process_bank_search(self.data, 'rent')
+        self.assertEqual(result, [])
+
+    def test_process_bank_operations_counts(self):
+        # Тест подсчёта операций по категориям
+        categories = ['utilities', 'salary', 'transfer', 'grocery']
+        result = process_bank_operations(self.data, categories)
+        # Ожидается по одной операции на каждую категорию
+        self.assertEqual(result['utilities'], 1)
+        self.assertEqual(result['salary'], 1)
+        self.assertEqual(result['transfer'], 1)
+        self.assertEqual(result['grocery'], 1)
+        # Общая сумма должна равняться количеству операций
+        self.assertEqual(sum(result.values()), len(self.data))
+
+    def test_process_bank_operations_empty_categories(self):
+        # Ваша текущая реализация возвращает пустой словарь при пустом списке
+        result = process_bank_operations(self.data, [])
+        self.assertEqual(result, {})
+
+    def test_process_bank_operations_empty_categories_need_exception(self):
+        # Если хотите, чтобы при пустом списке было исключение, раскомментируйте и используйте
+        # with self.assertRaises(IndexError):
+        #     process_bank_operations(self.data, [])
+        pass
+
+    def test_process_bank_search_case_insensitivity(self):
+        # Проверка игнорирования регистра в поиске
+        result = process_bank_search(self.data, 'Utilities')
+        self.assertEqual(len(result), 1)
+
+if __name__ == '__main__':
+    unittest.main()
 
 15. Объединены функции для работы приложения:
 
