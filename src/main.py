@@ -94,3 +94,7 @@ def main() -> None:
         print(f"Всего банковских операций в выборке: {len(transactions_final)}")
         for t in transactions_final:
             print(t)
+
+
+if __name__ == "__main__":
+    main()
