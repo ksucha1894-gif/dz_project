@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Главная</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        /* Фиксируем ширину меню */
+        #menu {
+            width: 1000px;
+            min-width: 1000px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            overflow-y: auto;
+        }
+        /* Основной контент смещаем вправо */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .container {
+            margin-left: 320px;
+            padding: 20px;
+            flex-grow: 1;
+            margin-right: 50px; /* Добавлен отступ справа */
+        }
+        /* Стили для заголовков */
+        .main-title {
+            text-align: center;
+            margin-bottom: 0.5rem; /* Уменьшен нижний отступ */
+        }
+        .subtitle {
+            text-align: center;
+            margin-top: 0; /* Убран верхний отступ */
+            margin-bottom: 2rem;
+        }
+        /* Стили для карточек */
+        .card-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .card-col {
+            width: 32%;
+            margin-bottom: 20px;
+        }
+        .card {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <nav id="menu">
+        <script>
+            fetch('menu.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('menu').innerHTML = data;
+                });
+        </script>
+    </nav>
+    <div class="container">
+        <h1 class="main-title">Главная</h1>
+        <h6 class="subtitle">Вы находитесь на сайте, предназначенном для продажи товаров.</h6>
+        <div class="card-row" id="cards-container">
+            <!-- Карточки будут вставлены сюда -->
+        </div>
+    </div>
+    <script>
+        const cardTemplate = `
+            <div class="card-col">
+                <div class="card-body text-center border p-3 mb-3 text-black" style="border-radius: 10px;">
+                    <h5 class="card-title">Товар 1</h5>
+                    <h3 class="card-subtitle mb-2 text-muted">$100</h6>
+                    <p class="card-text">10 users included, 2 GB of storage, <br>Email support, Help center access</p>
+                    <button type="button" class="btn btn-outline-primary">Купить</button>
+                </div>
+            </div>
+        `;
+        const container = document.getElementById('cards-container');
+        for (let i = 0; i < 3; i++) {
+            container.insertAdjacentHTML('beforeend', cardTemplate);
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</div>
+</body>
+</html>
