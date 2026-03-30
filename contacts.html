@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Контакты</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        /* Фиксируем ширину меню */
+        #menu {
+            width: 1000px; /* Ширина меню */
+            min-width: 1000px; /* Минимальная ширина, чтобы не сжималось */
+            height: 100vh; /* Полная высота экрана */
+            position: fixed; /* Фиксируем позицию, чтобы не влиял на контент */
+            left: 0;
+            top: 0;
+            overflow-y: auto; /* Если контент меню длинный */
+        }
+        /* Основной контент смещаем вправо на ширину меню + отступ */
+        .content {
+            margin-left: 320px; /* Ширина меню (300px) + отступ (20px) */
+            padding: 20px;
+            flex-grow: 1;
+        }
+        /* Контейнер для гибкого расположения */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+    <!-- Блок меню (фиксированный) -->
+    <nav id="menu">
+    <script>
+        fetch('menu.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('menu').innerHTML = data;
+            });
+    </script>
+    </nav>
+    <!-- Основной контент (смещен вправо) -->
+    <div class="content">
+        <div class="mt-4">
+            <h1 class="text-center">Контакты</h1>
+            <div class="mt-5">
+                <form>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Блок Имя/Почта/Сообщение -->
+                            <div class="border p-3 mb-3 flex-fill" style="border-radius: 10px;">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Имя</label>
+                                    <input type="text" class="form-control" id="name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Почта</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">@</span>
+                                        <input type="email" class="form-control" id="email">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Сообщение</label>
+                                    <textarea class="form-control" id="message" rows="3"></textarea>
+                                </div>
+                                <input class="btn btn-primary" type="submit" value="Отправить">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Блок Наши контакты -->
+                            <div class="p-3 mb-3 flex-fill">
+                                <h4>Наши контакты</h4>
+                                <div>
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+                                    incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                    <p class="text-break"></p>
+                                    While these feedback styles cannot be styled with CSS, you can still customize the
+                                    feedback.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+</div>
+</body>
+</html>
